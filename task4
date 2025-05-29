@@ -1,0 +1,47 @@
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import classification_report, confusion_matrix, roc_auc_score
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# 1. Load the dataset
+# Example: Heart Disease Dataset (from Kaggle or UCI repository)
+df = pd.read_csv('medical_data.csv')  # Replace with your actual file
+
+# 2. Check and clean data
+df.fillna(df.mean(numeric_only=True), inplace=True)
+
+# 3. Encode categorical variables if any
+df = pd.get_dummies(df, drop_first=True)
+
+# 4. Separate features and label
+X = df.drop('target', axis=1)  # Replace 'target' with actual target column name
+y = df['target']
+
+# 5. Scale features
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+# 6. Train-test split
+X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=42)
+
+# 7. Train the model
+model = RandomForestClassifier(n_estimators=100, random_state=42)
+model.fit(X_train, y_train)
+
+# 8. Predict and evaluate
+y_pred = model.predict(X_test)
+print("Classification Report:\n", classification_report(y_test, y_pred))
+print("Confusion Matrix:\n", confusion_matrix(y_test, y_pred))
+print("ROC AUC Score:", roc_auc_score(y_test, y_pred))
+
+# 9. Feature Importance Plot
+feature_importance = pd.Series(model.feature_importances_, index=X.columns)
+feature_importance.nlargest(10).plot(kind='barh')
+plt.title("Top 10 Important Features")
+plt.xlabel("Importance")
+plt.tight_layout()
+plt.show()
